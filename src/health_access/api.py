@@ -18,6 +18,7 @@ from .decision.research import backlog
 from .decision.optimizer import Option, optimize
 from .decision.robustness import Thresholds, compare_scenarios, evaluate_thresholds
 from .decision.memo import make_memo
+from .decision.comparison import compare_runs
 from .scenarios import PRESETS
 from .sensitivity import one_at_a_time, salib_morris
 from .simulation import simulate
@@ -115,6 +116,14 @@ def get_run(run_id: str):
         return RunStore(ROOT / "runs").get(run_id)
     except (ValueError, FileNotFoundError) as exc:
         raise HTTPException(404, "Run not found") from exc
+
+
+@app.get("/api/runs/{left_run_id}/compare/{right_run_id}")
+def run_compare(left_run_id: str, right_run_id: str):
+    try:
+        return compare_runs(get_run(left_run_id), get_run(right_run_id))
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.get("/api/runs/{run_id}/memo")
