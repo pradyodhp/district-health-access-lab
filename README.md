@@ -53,3 +53,7 @@ Open the local Vite URL displayed by npm. Build `web` with `npm run build` to le
 ### Decision workbench (local)
 
 The additional **Decision workbench** tab runs an evidence-gated training flow: case/evidence review, editable hypothetical assumptions, versioned local runs, heuristic research queue, training allocation and paired robustness, and a structured memo from the run. The memo remains **DECISION ON HOLD** for real funding. Backend endpoints are documented in the FastAPI OpenAPI page at `/docs`; no deployment or durable hosted run storage is claimed. Run the existing API and Vite dev server as described above. The original four tabs and API routes remain.
+
+### Verification
+
+`python3 -m pytest -q` covers source extraction, domain validation, conservation, reproducibility, optimizer constraints and API contracts. `cd web && npm test && npm run build` checks the UI safety projections and builds the application; CI runs both. The default six-district case remains hypothetical because observed inputs are an unverified transcription and the required screening, denominator, cost, effect and capacity evidence is missing. Model preference percentages are conditional on training distributions, not real-world confidence.
