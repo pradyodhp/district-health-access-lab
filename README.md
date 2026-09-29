@@ -57,3 +57,5 @@ The additional **Decision workbench** tab runs an evidence-gated training flow: 
 ### Verification
 
 `python3 -m pytest -q` covers source extraction, domain validation, conservation, reproducibility, optimizer constraints and API contracts. `cd web && npm test && npm run build` checks the UI safety projections and builds the application; CI runs both. The default six-district case remains hypothetical because observed inputs are an unverified transcription and the required screening, denominator, cost, effect and capacity evidence is missing. Model preference percentages are conditional on training distributions, not real-world confidence.
+
+See the [five-minute acceptance checklist](docs/acceptance-checklist.md) for the synthetic case walkthrough, expected evidence HOLD and test gates.
