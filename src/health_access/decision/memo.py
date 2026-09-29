@@ -8,9 +8,17 @@ def make_memo(run: dict, readiness: dict, evidence: list[dict]) -> dict:
     snapshot = run["snapshot"]
     case = snapshot["case"]
     bands = run["bands"]["screened"]
+    blockers = list(readiness["blockers"]) + [
+        "Verified compatible adult population denominator missing",
+        "Actual screening coverage numerator/denominator missing",
+        "Validated intervention costs and effects missing",
+        "Facility capacity and independent model-stability review missing",
+    ]
     return {
         "title": f"Decision memo | {case['name']}",
+        "executive_summary": "DECISION ON HOLD. The model is a training example; available evidence does not support a district funding choice.",
         "decision": "DECISION ON HOLD - no real funding allocation justified",
+        "decision_question": "Where could an NCD screening budget close the most verified screening gap per rupee?",
         "classification": "HYPOTHETICAL",
         "case_id": case["case_id"], "case_version": case["version"],
         "run_id": run["run_id"], "scenario_id": snapshot["scenario_id"],
@@ -18,22 +26,29 @@ def make_memo(run: dict, readiness: dict, evidence: list[dict]) -> dict:
         "model_version": case["model_version"],
         "objective": case["objective"], "population": case["population"],
         "geography": case["geography"], "horizon_months": case["horizon_months"],
+        "what_we_know": ["The pilot ledger contains third-party NFHS-5 indicator transcription; official fact-sheet check is pending",
+                         "The recorded percentages concern elevated measures or medicine use, not screening coverage"],
+        "what_we_do_not_know": blockers,
         "illustrative_screened_band": bands,
+        "uncertainty": "p10/p50/p90 are conditional on invented training distributions; not empirical confidence.",
+        "scenario_comparison": "Compare stored hypothetical run IDs before inferring a model change; no policy comparison is supported.",
+        "key_assumptions": {key: {"low": value["low"], "mode": value["mode"], "high": value["high"],
+                                    "unit": value["unit"], "status": "HYPOTHETICAL"}
+                            for key, value in snapshot["inputs"].items()},
         "sensitivity": "Inspect the scenario sensitivity screen; high model sensitivity is not causal evidence.",
+        "what_could_change": ["Verified compatible screening counts and adult denominators could change whether a gap can be assessed",
+                              "Validated cost and effect studies could change allocation feasibility",
+                              "Assumed awareness and capacity ranges can change rankings inside the training model only"],
         "evidence_summary": {"records": len(evidence),
                              "unverified": sum(e.get("status") == "OBSERVED_UNVERIFIED" for e in evidence),
                              "not_screening_coverage": True},
-        "blockers": list(readiness["blockers"]) + [
-            "Verified compatible adult population denominator missing",
-            "Actual screening coverage numerator/denominator missing",
-            "Validated intervention costs and effects missing",
-            "Facility capacity and independent model-stability review missing",
-        ],
+        "blockers": blockers,
         "next_research": ["Verify official district factsheets against transcription",
                           "Obtain compatible adult denominators and actual screening counts",
                           "Validate intervention costs, effects, capacity and period"],
         "alternatives": ["Do not allocate real funds from the synthetic scenario",
                          "Use the workbench only to compare hypothetical assumptions"],
+        "methodology": "Versioned hypothetical case, triangular distributions, seeded Monte Carlo; real decision blocked by evidence gate.",
         "limitations": ["NFHS glucose elevation is not screening coverage or causal effect",
                         "Synthetic output is not a district patient, expenditure or policy estimate"],
         "provenance": {"run_digest": run["snapshot_digest"],
