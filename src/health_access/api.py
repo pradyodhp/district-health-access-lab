@@ -12,6 +12,9 @@ from .decision.cases import pilot_case
 from .decision.evidence import district_ledger
 from .decision.readiness import assess
 from .decision.schema import DecisionCase
+from .decision.runs import RunStore, make_run
+from .decision.hypotheses import HEALTH_HYPOTHESES
+from .decision.research import backlog
 from .scenarios import PRESETS
 from .sensitivity import one_at_a_time, salib_morris
 from .simulation import simulate
@@ -44,7 +47,7 @@ class ScenarioInput(BaseModel):
     spend_inr: Range
 
     def domain(self):
-        return Scenario(**{key: getattr(self, key).domain() for key in self.model_fields})
+        return Scenario(**{key: getattr(self, key).domain() for key in type(self).model_fields})
 
 
 @app.get("/api/health")
@@ -81,6 +84,47 @@ def evidence_room():
 def readiness_view():
     from datetime import date
     return assess(pilot_case(), district_ledger(ROOT / "data/processed/pilot_indicators.csv"), as_of=date.today())
+
+
+class RunRequest(BaseModel):
+    case: DecisionCase
+    scenario_id: str = Field(min_length=1)
+    scenario_version: str = Field(min_length=1)
+    inputs: ScenarioInput
+    seed: int = Field(default=42, ge=0, le=2**32 - 1)
+    simulation_count: int = Field(default=500, ge=100, le=100_000)
+
+
+@app.post("/api/runs")
+def create_run(payload: RunRequest):
+    try:
+        run = make_run(payload.case, payload.inputs.domain(), scenario_id=payload.scenario_id,
+                       scenario_version=payload.scenario_version,
+                       draws=payload.simulation_count, seed=payload.seed)
+        return RunStore(ROOT / "runs").save(run)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.get("/api/runs/{run_id}")
+def get_run(run_id: str):
+    try:
+        return RunStore(ROOT / "runs").get(run_id)
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(404, "Run not found") from exc
+
+
+@app.get("/api/hypotheses")
+def hypotheses_view():
+    return {"hypotheses": HEALTH_HYPOTHESES, "status": "RESEARCH_QUESTIONS_NOT_FINDINGS"}
+
+
+@app.get("/api/research/{preset}")
+def research_view(preset: str):
+    if preset not in PRESETS:
+        raise HTTPException(404, "Unknown preset")
+    return {"classification": "HYPOTHETICAL", "items": backlog(PRESETS[preset](), [], effort={}),
+            "warning": "Heuristic research queue, not causal effects or formal value-of-information"}
 
 
 @app.get("/api/presets")
