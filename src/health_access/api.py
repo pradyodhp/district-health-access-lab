@@ -19,6 +19,7 @@ from .decision.optimizer import Option, optimize
 from .decision.robustness import Thresholds, compare_scenarios, evaluate_thresholds
 from .decision.memo import make_memo
 from .decision.comparison import compare_runs
+from .decision.reversal import reversal_scan
 from .scenarios import PRESETS
 from .sensitivity import one_at_a_time, salib_morris
 from .simulation import simulate
@@ -181,6 +182,17 @@ def optimize_view(payload: OptimizationRequest):
 def robustness_view(draws: int = Query(300, ge=100, le=10_000), seed: int = 42):
     return compare_scenarios({name: factory() for name, factory in PRESETS.items()},
                              draws=draws, seed=seed)
+
+
+@app.get("/api/reversal/{left}/{right}")
+def reversal_view(left: str, right: str, field: str = "awareness_rate",
+                  steps: int = Query(20, ge=2, le=100)):
+    if left not in PRESETS or right not in PRESETS:
+        raise HTTPException(404, "Unknown preset")
+    try:
+        return reversal_scan(PRESETS[left](), PRESETS[right](), field=field, steps=steps)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @app.get("/api/threshold/{preset}")
