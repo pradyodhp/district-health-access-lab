@@ -83,7 +83,7 @@ def extract(raw_path: Path) -> list[dict[str, str]]:
 
 def write_csv(rows: list[dict[str, str]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=FIELDS)
+    with path.open("w", encoding="utf-8", newline="\n") as stream:
+        writer = csv.DictWriter(stream, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
