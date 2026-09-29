@@ -43,7 +43,7 @@ pip install -r requirements.txt -r requirements-dev.txt httpx
 python3 scripts/build_data.py
 uvicorn health_access.api:app --app-dir src --reload
 # In another terminal:
-cd web && npm ci && npm run dev
+cd web && npm install && npm run dev
 ```
 
 Open the local Vite URL displayed by npm. Build `web` with `npm run build` to let FastAPI serve the bundled interface at `/`. Scenario labels say **HYPOTHETICAL** throughout. The district evidence ledger uses parsed NFHS percentages; it does not combine them with fabricated screening counts. The scenario lab uses a deliberately fictional cohort, Monte Carlo bands and SALib Morris screening. The decision memo can be downloaded as text or printed to PDF using the browser. Read [methodology](docs/methodology.md), [limitations](LIMITATIONS.md) and the [interview kit](INTERVIEW.md) before presenting this as a work sample.
