@@ -33,3 +33,19 @@ Requires Python 3.10+. The extraction itself has no third-party dependencies. A 
 4. Build the React decision interface, one-page memo and interview kit.
 
 No individual health records, clinical advice, or operational funding recommendation are included.
+
+## Run the interactive work sample
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt httpx
+python3 scripts/build_data.py
+uvicorn health_access.api:app --app-dir src --reload
+# In another terminal:
+cd web && npm ci && npm run dev
+```
+
+Open the local Vite URL displayed by npm. Build `web` with `npm run build` to let FastAPI serve the bundled interface at `/`. Scenario labels say **HYPOTHETICAL** throughout. The district evidence ledger uses parsed NFHS percentages; it does not combine them with fabricated screening counts. The scenario lab uses a deliberately fictional cohort, Monte Carlo bands and SALib Morris screening. The decision memo can be downloaded as text or printed to PDF using the browser. Read [methodology](docs/methodology.md), [limitations](LIMITATIONS.md) and the [interview kit](INTERVIEW.md) before presenting this as a work sample.
+
+**Not yet shipped as a policy tool:** official district PDF verification, screening coverage, compatible population denominators, cost model evidence, valid district ranking, map, one-click server-generated PDF and live deployment. Those are evidence/hosting gates, not quietly completed features.
