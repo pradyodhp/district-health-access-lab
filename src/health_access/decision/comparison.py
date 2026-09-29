@@ -9,6 +9,8 @@ def compare_runs(left: dict, right: dict) -> dict:
     if a["case"]["case_id"] != b["case"]["case_id"]:
         raise ValueError("Runs from different cases are not directly comparable")
     changes = []
+    if set(a["inputs"]) != set(b["inputs"]):
+        raise ValueError("Input schema mismatch")
     for variable, old in a["inputs"].items():
         new = b["inputs"].get(variable)
         if new is None:
