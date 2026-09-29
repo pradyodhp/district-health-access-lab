@@ -37,3 +37,7 @@ Limits: there is no evidence-backed cost/effect input, no real district allocati
 ## Run comparison
 
 `GET /api/runs/{left_run_id}/compare/{right_run_id}` compares two stored runs from the same case. It lists changed input snapshots and the change in modeled median screened. The real-funding decision remains HOLD regardless of an illustrative improvement. Neither the model delta nor a changed version is evidence of causal impact. The workbench offers comparison after a second run; its prior-run state lasts only in that browser session.
+
+## Evidence lineage drill-down
+
+Each indicator ledger row has a source-trace action backed by `GET /api/evidence/{evidence_id}/lineage`. The endpoint walks explicit `derived_from` parent IDs and rejects missing parents or cycles; current 24 rows have no derived parents and remain `OBSERVED_UNVERIFIED`. The third-party transcription and its URL are traceable, but the ledger does not become a screening-coverage source through this action.
