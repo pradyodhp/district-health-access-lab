@@ -1,0 +1,13 @@
+# Methodology, current phase
+
+The source is a community-maintained CSV transcribed from district NFHS fact sheets. `scripts/build_data.py` selects six exact state-district pairs and two sex-specific NFHS-5 blood-sugar indicators plus two blood-pressure indicators for context. The original indicator wording is retained. Data are percentages, not population counts. Blood pressure is included as context only; the pilot decision question concerns blood-glucose screening.
+
+For each selected row the script records its value, denominator label (adult women or men, age 15+), observation status, survey vintage, source URL and retrieval date. Empty or zero NFHS-4 cells are not presented as trends because the source's NFHS-4 coverage for these indicators has not been established. Source-reported NFHS-5 zero remains a numeric observation, subject to official verification.
+
+This phase makes **no** causal inference, screening-rate inference, sex-weighted district average, programme-cost estimate or district priority ranking. Phase 2 must first reconcile the proposed funnel's eligible, tested, positive, aware, referred and treated cohorts. Each conditional conversion must use a named denominator and compatible time window. Scenario assumptions should use defensible bounded distributions; sampled outputs must preserve physical constraints. Sensitivity analysis is meaningful only after the input definitions are defensible.
+
+## Synthetic scenario contract (Phase 2 onward)
+
+`eligible` is a hypothetical cohort, not a district population. `need_rate` is a fictional proxy share; `awareness_rate` is conditional on that group; `screening_rate` is conditional on awareness, not population-wide screening coverage. `followup_rate` applies to screened members of that cohort. Capacity caps the screened count. These definitions guarantee each successive count is no larger than its predecessor, but they are **not** measured care pathways. Training presets carry written `rationale` and min/mode/max values, sampled as triangular distributions (seed 42). The API reports 10th, 50th and 90th percentiles. Its one-at-a-time ranking and SALib Morris screen explore structural sensitivity; they do not establish statistical confidence intervals or prove intervention effects.
+
+The text memo states that prioritization is deferred. Printing the memo view to PDF is an explicit browser action; there is not yet a server-side PDF export. A district choropleth has intentionally not been added: without valid district gap estimates, coloring the map would imply false precision. The 4-view interface includes an observed indicator ledger instead.
