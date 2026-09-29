@@ -41,3 +41,7 @@ Limits: there is no evidence-backed cost/effect input, no real district allocati
 ## Evidence lineage drill-down
 
 Each indicator ledger row has a source-trace action backed by `GET /api/evidence/{evidence_id}/lineage`. The endpoint walks explicit `derived_from` parent IDs and rejects missing parents or cycles; current 24 rows have no derived parents and remain `OBSERVED_UNVERIFIED`. The third-party transcription and its URL are traceable, but the ledger does not become a screening-coverage source through this action.
+
+## Conditional preference scan
+
+Paired draws are stratified by whether the shared awareness-rate quantile falls in the lower or upper half of its assumed range. The workbench shows how scenario preference share changes across these two strata; it does not derive an empirical cutoff or assign causal meaning to awareness. No real funding decision can flip before the missing evidence and independent stability gates are addressed.
