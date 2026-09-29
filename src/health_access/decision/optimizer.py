@@ -22,7 +22,7 @@ class Option:
     depends_on: tuple[str, ...] = ()
 
     def __post_init__(self):
-        if not self.id or not self.district or self.min_inr < 0 or self.max_inr < self.min_inr:
+        if not self.id or not self.district or not all(isinstance(v, int) for v in (self.min_inr, self.max_inr, self.step_inr)) or self.min_inr < 0 or self.max_inr < self.min_inr:
             raise ValueError("Invalid option")
         if self.step_inr <= 0 or (self.max_inr - self.min_inr) % self.step_inr:
             raise ValueError("Allocation grid must exactly span limits")
@@ -36,7 +36,7 @@ def optimize(options: list[Option], *, budget_inr: int,
              district_capacity: dict[str, float], classification: str = "HYPOTHETICAL") -> dict:
     if classification != "HYPOTHETICAL":
         raise ValueError("Real funding optimization requires verified evidence gates")
-    if budget_inr < 0 or not options or len(options) > 8:
+    if not isinstance(budget_inr, int) or budget_inr < 0 or not options or len(options) > 8:
         raise ValueError("Invalid budget or option count")
     if len({o.id for o in options}) != len(options):
         raise ValueError("Duplicate option ID")
