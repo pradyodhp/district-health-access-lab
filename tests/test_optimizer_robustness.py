@@ -61,3 +61,10 @@ def test_optimizer_and_robustness_api_contracts():
     assert "samples" not in result and result["classification"] == "HYPOTHETICAL"
     threshold = client.get("/api/threshold/status-quo?draws=100").json()
     assert "HYPOTHETICAL" in threshold["status"]
+
+
+def test_conditional_preference_reversal_scan_is_reproducible():
+    result = compare_scenarios({"a": training_scenario(), "b": training_scenario()}, draws=100, seed=9)
+    for group in result["conditional_preference"].values():
+        assert group == {"a": .5, "b": .5}
+    assert "empirical cutoff" in result["reversal_note"]
