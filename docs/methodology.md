@@ -53,3 +53,7 @@ Paired draws are stratified by whether the shared awareness-rate quantile falls 
 ## Structured client memo
 
 The memo is generated from the stored run snapshot and a rule-based evidence gate. It includes executive summary, decision question, what we know and do not know, synthetic model bands, assumption ranges, uncertainty, a scenario-comparison caveat, what could change the assessment, research priorities, limitations, methodology and run provenance. The only funding conclusion is `DECISION ON HOLD`. JSON export is machine-readable; the old browser print flow is not a verified server PDF generator.
+
+## Case builder boundary
+
+The workbench lets an analyst edit the hypothetical case name/version, geography, population, service, horizon, training budget and target outcome; each run snapshots the typed `DecisionCase`. The current healthcare adapter supports only its fixed `maximize_additional_screened` objective. Training intervention dependencies are an explicit optimizer example; a general multi-domain case builder and real evidence intake are not claimed. Editing the case clears prior runs from the screen until a new snapshot is made; stored immutable runs can still be retrieved by ID locally.
