@@ -60,6 +60,10 @@ def compare_scenarios(scenarios: dict[str, Scenario], *, draws: int = 1000,
     rng = random.Random(seed)
     wins = {name: 0.0 for name in scenarios}
     paired = {name: [] for name in scenarios}
+    # A conditional what-if scan, not an empirical reversal threshold.
+    lower_half_wins = {name: 0.0 for name in scenarios}
+    upper_half_wins = {name: 0.0 for name in scenarios}
+    lower_draws = upper_draws = 0
     names = sorted(scenarios)
     def triangular_quantile(low, mode, high, q):
         if high == low:
@@ -86,6 +90,15 @@ def compare_scenarios(scenarios: dict[str, Scenario], *, draws: int = 1000,
         ties = [n for n, value in results.items() if abs(value - maximum) < 1e-9]
         for name in ties:
             wins[name] += 1 / len(ties)
+        # Stratify by a shared awareness input quantile. This identifies an
+        # assumption that may change the scenario ordering, not an observed cutoff.
+        group = lower_half_wins if quantiles[FIELDS.index("awareness_rate")] < .5 else upper_half_wins
+        if group is lower_half_wins:
+            lower_draws += 1
+        else:
+            upper_draws += 1
+        for name in ties:
+            group[name] += 1 / len(ties)
     thresholds = {}
     for name in names:
         values = sorted(s["screened"] for s in paired[name])
@@ -99,4 +112,8 @@ def compare_scenarios(scenarios: dict[str, Scenario], *, draws: int = 1000,
             "preference_share": {name: wins[name] / draws for name in names},
             "ties_split_evenly": True,
             "warning": "Conditional on synthetic assumptions; not empirical decision confidence",
-            "reversal_note": "Vary the shared assumptions and compare preference share; no empirical reversal threshold claimed"}
+            "conditional_preference": {
+                "awareness_lower_half_assumed_range": {name: lower_half_wins[name] / lower_draws for name in names},
+                "awareness_upper_half_assumed_range": {name: upper_half_wins[name] / upper_draws for name in names},
+            },
+            "reversal_note": "Compare ordering under lower and upper halves of assumed awareness range; no empirical cutoff claimed"}
