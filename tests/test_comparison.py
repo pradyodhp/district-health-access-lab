@@ -16,3 +16,11 @@ def test_run_comparison_changes_and_hold():
     assert result['screened_p50_delta'] == pytest.approx(b['bands']['screened']['p50']-a['bands']['screened']['p50'])
     assert result['decision_changed'] is False and result['decision_status'] == 'HOLD_FOR_REAL_FUNDING'
     assert compare_runs(a,a)['changed_inputs'] == []
+
+
+def test_run_comparison_rejects_schema_mismatch():
+    a = make_run(pilot_case(), training_scenario(), scenario_id='base', scenario_version='1', draws=100, seed=2)
+    b = make_run(pilot_case(), training_scenario(), scenario_id='other', scenario_version='1', draws=100, seed=2)
+    del b['snapshot']['inputs']['capacity']
+    with pytest.raises(ValueError, match='schema'):
+        compare_runs(a,b)
