@@ -17,3 +17,15 @@ def test_memo_holds_and_traces_run():
     assert memo["evidence_summary"]["unverified"] == 1
     assert "not verified" in memo["blockers"]
     assert memo["illustrative_screened_band"] == run["bands"]["screened"]
+
+
+def test_memo_has_client_sections_without_fabricated_recommendation():
+    run = make_run(pilot_case(), training_scenario(), scenario_id="demo",
+                   scenario_version="1", draws=100, seed=3)
+    memo = make_memo(run, {"blockers":["unverified"]}, [])
+    for key in ("executive_summary", "decision_question", "what_we_know",
+                "what_we_do_not_know", "uncertainty", "scenario_comparison",
+                "key_assumptions", "what_could_change", "methodology", "limitations"):
+        assert memo[key]
+    assert set(x["status"] for x in memo["key_assumptions"].values()) == {"HYPOTHETICAL"}
+    assert "ON HOLD" in memo["decision"]
