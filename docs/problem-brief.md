@@ -11,7 +11,7 @@ A state health mission has a fixed NCD screening budget, amount not yet specifie
 - Six contrasting pilot districts across two states; do not treat them as statistically representative. Their urban/rural labels, facility access and relative income have not been validated.
 - Adults aged 15+ are the survey universe of the selected NFHS-5 blood-sugar indicator. Any later programme targeting 30+ must obtain age-compatible data; do not silently apply the 15+ rate to that group.
 - NFHS-5 district fact sheets are the starting source of observed *blood-glucose elevation or medicine* by sex. These percentages cannot be added or averaged without sex-specific denominators.
-- NFHS-4 cells for these indicators in this third-party CSV are zero placeholders, not demonstrated historical observations. The extractor writes null and marks unavailable rather than claiming a trend.
+- NFHS-4 cells for these indicators in this third-party CSV are zero placeholders, not demonstrated historical observations. The extractor does not emit NFHS-4 rows rather than claiming a trend.
 
 ## Planned funnel, conditional on evidence
 
