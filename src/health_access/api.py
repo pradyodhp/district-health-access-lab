@@ -17,6 +17,7 @@ from .decision.hypotheses import HEALTH_HYPOTHESES
 from .decision.research import backlog
 from .decision.optimizer import Option, optimize
 from .decision.robustness import Thresholds, compare_scenarios, evaluate_thresholds
+from .decision.memo import make_memo
 from .scenarios import PRESETS
 from .sensitivity import one_at_a_time, salib_morris
 from .simulation import simulate
@@ -114,6 +115,15 @@ def get_run(run_id: str):
         return RunStore(ROOT / "runs").get(run_id)
     except (ValueError, FileNotFoundError) as exc:
         raise HTTPException(404, "Run not found") from exc
+
+
+@app.get("/api/runs/{run_id}/memo")
+def run_memo(run_id: str):
+    run = get_run(run_id)
+    from datetime import date
+    records = district_ledger(ROOT / "data/processed/pilot_indicators.csv")
+    readiness = assess(pilot_case(), records, as_of=date.today())
+    return make_memo(run, readiness, [record.model_dump(mode="json") for record in records])
 
 
 @app.get("/api/hypotheses")
