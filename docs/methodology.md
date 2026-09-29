@@ -45,3 +45,11 @@ Each indicator ledger row has a source-trace action backed by `GET /api/evidence
 ## Conditional preference scan
 
 Paired draws are stratified by whether the shared awareness-rate quantile falls in the lower or upper half of its assumed range. The workbench shows how scenario preference share changes across these two strata; it does not derive an empirical cutoff or assign causal meaning to awareness. No real funding decision can flip before the missing evidence and independent stability gates are addressed.
+
+## One-input reversal scan
+
+`GET /api/reversal/{left}/{right}?field=awareness_rate` samples 21 equally spaced shared quantiles across each training scenario's *assumed* awareness range, holding other inputs at their modes. It reports preference changes only as bounded what-if intervals, not measured awareness thresholds or causal statements. The actual funding status remains HOLD.
+
+## Structured client memo
+
+The memo is generated from the stored run snapshot and a rule-based evidence gate. It includes executive summary, decision question, what we know and do not know, synthetic model bands, assumption ranges, uncertainty, a scenario-comparison caveat, what could change the assessment, research priorities, limitations, methodology and run provenance. The only funding conclusion is `DECISION ON HOLD`. JSON export is machine-readable; the old browser print flow is not a verified server PDF generator.
