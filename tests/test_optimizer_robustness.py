@@ -68,3 +68,8 @@ def test_conditional_preference_reversal_scan_is_reproducible():
     for group in result["conditional_preference"].values():
         assert group == {"a": .5, "b": .5}
     assert "empirical cutoff" in result["reversal_note"]
+
+
+def test_optimizer_rejects_fractional_allocation_grid():
+    with pytest.raises(ValueError):
+        Option('x', 'A', 0, 10.5, 1, .1, 20)
