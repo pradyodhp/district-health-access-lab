@@ -23,3 +23,7 @@ The new `/api/case`, `/api/evidence`, `/api/readiness` and `/api/case/readiness`
 ## Hypotheses and research priority
 
 `/api/hypotheses` maps demand, access, capacity and retention questions to possible metrics and research actions. These are questions, not findings. `/api/research/{preset}` reports a transparent **heuristic** rank on synthetic scenario inputs: one-at-a-time output swing, relative parameter range, evidence confidence and a stated 1-5 effort estimate. It is not formal Bayesian value of information and does not imply that model sensitivity is a causal effect. Its purpose is to identify which missing inputs may be worth validating next.
+
+## Hypothetical allocation and robustness (increment C)
+
+The bounded grid optimizer searches integer allocation steps subject to total budget, per-option limits, dependencies, intervention capacities and shared district caps. Its yield-per-rupee values are explicitly supplied as hypothetical assumptions; it rejects REAL classification. It does not optimize actual rupees or estimate intervention efficacy. The paired-draw robustness comparison applies the same uniform quantile to each scenario's corresponding input distribution (triangular inverse CDF), separates ties evenly and reports preference share and p10/p50/p90 under invented ranges. Threshold results have an explicit borderline band and return CANNOT_ASSESS for real evidence-gated decisions. Neither preference share nor threshold probability is real-world confidence. These methods are a training workbench while evidence gates remain open.
