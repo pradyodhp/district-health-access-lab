@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from .model import Assumption, Scenario, compare, evaluate
 from .decision.cases import pilot_case
-from .decision.evidence import district_ledger
+from .decision.evidence import district_ledger, trace
 from .decision.readiness import assess
 from .decision.schema import DecisionCase
 from .decision.runs import RunStore, make_run
@@ -82,6 +82,17 @@ def evidence_room():
     records = district_ledger(ROOT / "data/processed/pilot_indicators.csv")
     return {"records": records, "classification": "OBSERVED_UNVERIFIED",
             "warning": "The ledger is NOT screening coverage; official PDF verification pending."}
+
+
+@app.get("/api/evidence/{evidence_id:path}/lineage")
+def evidence_lineage(evidence_id: str):
+    records = district_ledger(ROOT / "data/processed/pilot_indicators.csv")
+    try:
+        lineage = trace(evidence_id, records)
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    return {"evidence_id": evidence_id, "lineage": lineage,
+            "warning": "These observed-unverified indicator records do not validate screening coverage"}
 
 
 @app.get("/api/readiness")
