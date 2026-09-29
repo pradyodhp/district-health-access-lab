@@ -8,6 +8,10 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .model import Assumption, Scenario, compare, evaluate
+from .decision.cases import pilot_case
+from .decision.evidence import district_ledger
+from .decision.readiness import assess
+from .decision.schema import DecisionCase
 from .scenarios import PRESETS
 from .sensitivity import one_at_a_time, salib_morris
 from .simulation import simulate
@@ -53,6 +57,30 @@ def indicators():
     with (ROOT / "data/processed/pilot_indicators.csv").open(newline="", encoding="utf-8") as stream:
         return {"rows": list(csv.DictReader(stream)),
                 "warning": "Third-party NFHS parse; official district factsheet verification pending. Not screening coverage."}
+
+
+@app.get("/api/case")
+def case_view():
+    return pilot_case()
+
+
+@app.post("/api/case/readiness")
+def case_readiness(payload: DecisionCase):
+    from datetime import date
+    return assess(payload, district_ledger(ROOT / "data/processed/pilot_indicators.csv"), as_of=date.today())
+
+
+@app.get("/api/evidence")
+def evidence_room():
+    records = district_ledger(ROOT / "data/processed/pilot_indicators.csv")
+    return {"records": records, "classification": "OBSERVED_UNVERIFIED",
+            "warning": "The ledger is NOT screening coverage; official PDF verification pending."}
+
+
+@app.get("/api/readiness")
+def readiness_view():
+    from datetime import date
+    return assess(pilot_case(), district_ledger(ROOT / "data/processed/pilot_indicators.csv"), as_of=date.today())
 
 
 @app.get("/api/presets")
