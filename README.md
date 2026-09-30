@@ -19,18 +19,15 @@ Maharashtra: Mumbai, Pune, Gadchiroli. Odisha: Khordha, Koraput, Malkangiri. The
 
 ```bash
 python3 scripts/build_data.py
-python3 -m pip install -r requirements-dev.txt
+python3 -m pip install -r requirements.txt -r requirements-dev.txt
 python3 -m pytest -q
 ```
 
 Requires Python 3.10+. The extraction itself has no third-party dependencies. A future pipeline will add the **official district fact-sheet cross-check**, a valid district population denominator and a real screening-coverage source before any district ranking, cost-per-person estimate, or funnel is presented as evidence. The raw CSV is an independently maintained parse of [NFHS-5/4 district fact sheets](https://github.com/SaiSiddhardhaKalla/NFHS), not an official release. See [source manifest](data/raw/SOURCES.md).
 
-## Roadmap
+## Current decision workbench and next evidence
 
-1. Verify selected rows against official district PDFs, document any corrections, and source denominators and screening volumes from a comparable period.
-2. Build a pure-Python funnel engine with separate observed and assumed inputs, bounds and conservation tests; expose it through FastAPI.
-3. Add scenarios, uncertainty bands and sensitivity (SALib) after inputs are defensible.
-4. Build the React decision interface, one-page memo and interview kit.
+The synthetic engine, FastAPI, React workbench, sensitivity, paired robustness, discrete allocation, run manifests and artifact-backed memo are implemented. They remain a training work sample. The remaining empirical task is official factsheet verification, compatible screening counts/denominators and cost/effect/capacity evidence, followed by independent methodological review.
 
 No individual health records, clinical advice, or operational funding recommendation are included.
 
@@ -59,3 +56,13 @@ The additional **Decision workbench** tab runs an evidence-gated training flow: 
 `python3 -m pytest -q` covers source extraction, domain validation, conservation, reproducibility, optimizer constraints and API contracts. `cd web && npm test && npm run build` checks the UI safety projections and builds the application; CI runs both. The default six-district case remains hypothetical because observed inputs are an unverified transcription and the required screening, denominator, cost, effect and capacity evidence is missing. Model preference percentages are conditional on training distributions, not real-world confidence.
 
 See the [five-minute acceptance checklist](docs/acceptance-checklist.md) for the synthetic case walkthrough, expected evidence HOLD and test gates.
+
+## Audit and interview documentation
+
+- [10/10 baseline gap analysis](docs/10-10-gap-analysis.md)
+- [Architecture](docs/architecture.md) and [model equations](docs/model-methodology.md)
+- [Evidence methodology](docs/evidence-methodology.md), [readiness gates](docs/decision-readiness.md), [research backlog](docs/research-backlog.md)
+- [Run integrity/replay](docs/reproducibility.md), [testing](docs/testing.md), [deployment configuration](docs/deployment.md)
+- [Limitations](docs/limitations.md), [performance](docs/performance.md), [interview guide](docs/interview-guide.md)
+
+One-command training artifacts: `python3 scripts/demo.py --output /tmp/training-demo`. All demo results are HYPOTHETICAL. `/health` reports service/engine/run format and local-storage limits. The v2 run stores frozen evidence, readiness and analyses with input/output hashes; its memo does not re-read today's ledger. Format-1 local runs require explicit migration. No deployment was made by this upgrade.
