@@ -14,8 +14,8 @@ def test_memo_holds_and_traces_run():
     assert memo["decision"].startswith("DECISION ON HOLD")
     assert memo["run_id"] == run["run_id"]
     assert memo["provenance"]["run_digest"] == run["snapshot_digest"]
-    assert memo["evidence_summary"]["unverified"] == 1
-    assert "not verified" in memo["blockers"]
+    assert memo["evidence_summary"]["unverified"] == 0  # frozen empty snapshot, not caller context
+    assert "not verified" not in memo["blockers"]  # no live caller context
     assert memo["illustrative_screened_band"] == run["bands"]["screened"]
 
 
