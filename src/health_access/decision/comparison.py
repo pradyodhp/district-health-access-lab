@@ -8,6 +8,11 @@ def compare_runs(left: dict, right: dict) -> dict:
     a, b = left["snapshot"], right["snapshot"]
     if a["case"]["case_id"] != b["case"]["case_id"]:
         raise ValueError("Runs from different cases are not directly comparable")
+    for dimension in ("population", "geography", "period_start", "period_end", "model_version", "target_outcome"):
+        if a["case"].get(dimension) != b["case"].get(dimension):
+            raise ValueError(f"Incompatible case dimension: {dimension}")
+    if a.get("engine_version") != b.get("engine_version"):
+        raise ValueError("Incompatible engine versions")
     changes = []
     if set(a["inputs"]) != set(b["inputs"]):
         raise ValueError("Input schema mismatch")
