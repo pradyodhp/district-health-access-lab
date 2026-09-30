@@ -5,7 +5,7 @@ import csv
 from datetime import date
 from pathlib import Path
 
-from .schema import Confidence, DecisionCase, Evidence, Status
+from .schema import Confidence, Evidence, Status
 
 
 def district_ledger(csv_path: Path, model_version: str = "0.2.0") -> list[Evidence]:
