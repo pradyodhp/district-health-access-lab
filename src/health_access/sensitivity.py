@@ -19,6 +19,12 @@ def one_at_a_time(scenario: Scenario, outcome: str = "screened") -> list[dict]:
         findings.append({"input": name, "low_outcome": low, "baseline": center,
                          "high_outcome": high, "swing": high - low,
                          "method": "one-at-a-time scenario range, not global sensitivity"})
+    total = sum(abs(r["swing"]) for r in findings)
+    for row in findings:
+        assumed = getattr(scenario, row["input"])
+        row.update(parameter_range={"low": assumed.low, "high": assumed.high, "unit": assumed.unit},
+                   normalized_importance=abs(row["swing"])/total if total else 0,
+                   interpretation="Sensitivity under supplied ranges, not evidence that an assumption is wrong")
     return sorted(findings, key=lambda row: row["swing"], reverse=True)
 
 
