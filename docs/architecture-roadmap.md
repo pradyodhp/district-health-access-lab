@@ -1,4 +1,6 @@
-# Architecture assessment and incremental roadmap
+# Historical architecture assessment and incremental roadmap
+
+This records the pre-workbench assessment. For current architecture and remaining gaps, see [architecture](architecture.md) and [10/10 gap analysis](10-10-gap-analysis.md).
 
 Assessment date: 2026-09-30. Baseline: `d8ee400` on `main`; 17 tests pass, Vite builds.
 
