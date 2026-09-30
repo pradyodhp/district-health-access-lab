@@ -36,6 +36,14 @@ class Scenario:
     capacity: Assumption
     spend_inr: Assumption
 
+    def __post_init__(self):
+        expected = {"eligible": "people", "capacity": "people", "spend_inr": "INR",
+                    "need_rate": "rate", "awareness_rate": "rate",
+                    "screening_rate": "rate", "followup_rate": "rate"}
+        for field, unit in expected.items():
+            if getattr(self, field).unit != unit:
+                raise ValueError(f"{field} requires unit {unit}")
+
 
 def funnel(eligible: float, need_rate: float, awareness_rate: float,
            screening_rate: float, followup_rate: float, capacity: float,
