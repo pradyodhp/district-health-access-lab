@@ -1,0 +1,7 @@
+{
+  "name": "district-health-access-lab-e2e",
+  "private": true,
+  "description": "Browser E2E for the decision workbench. Kept separate from web/ so the app lockfile stays small.",
+  "scripts": { "test": "playwright test" },
+  "devDependencies": { "@playwright/test": "^1.63.0" }
+}
