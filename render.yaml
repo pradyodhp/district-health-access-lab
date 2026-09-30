@@ -2,6 +2,12 @@ services:
   - type: web
     name: district-health-access-lab
     runtime: python
-    buildCommand: pip install -r requirements.txt && cd web && npm install && npm run build
+    buildCommand: pip install -r requirements.txt && python3 scripts/build_data.py && cd web && npm ci && npm run build
     startCommand: uvicorn health_access.api:app --app-dir src --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: NODE_VERSION
+        value: 22.23.3
     plan: free
