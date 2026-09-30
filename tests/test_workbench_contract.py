@@ -12,7 +12,6 @@ def test_workbench_roundtrip(tmp_path, monkeypatch):
     from health_access import api
     monkeypatch.setattr(api, "ROOT", tmp_path)
     # The pilot evidence is bundled with the package, not with mutable run storage.
-    original = Path(__file__).resolve().parents[1]
     def ledger(_):
         return []
     monkeypatch.setattr(api, "district_ledger", ledger)
