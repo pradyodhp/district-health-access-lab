@@ -94,3 +94,25 @@ def test_run_comparison_rejects_population_changes():
 @pytest.mark.parametrize('path',['/api/scenario/status-quo?draws=1','/api/scenario/status-quo?draws=100001','/api/robustness?seed=-1','/api/threshold/status-quo?minimum_screened=-1'])
 def test_expensive_invalid_inputs_return_422(path):
     assert TestClient(app).get(path).status_code==422
+
+def test_request_ids_and_health_version():
+    c=TestClient(app)
+    response=c.get('/health')
+    assert response.json()['run_format']=='2'
+    assert response.headers['x-request-id']
+    bad=c.get('/api/scenario/status-quo?draws=1')
+    assert bad.json()['request_id']==bad.headers['x-request-id']
+
+from health_access.decision.optimizer import Option, optimize
+
+def test_optimizer_cycle_rejected():
+    options=[Option('a','Training',0,100,50,.1,10,('b',)),Option('b','Training',0,100,50,.1,10,('a',))]
+    with pytest.raises(ValueError,match='Cyclic'):optimize(options,budget_inr=100,district_capacity={'Training':100})
+
+from health_access.decision.backlog import from_gates
+
+def test_research_backlog_is_linked_and_has_work_state():
+    report=assess(pilot_case(),[],as_of=date(2026,9,30))
+    items=from_gates(report)
+    assert len(items)==10
+    assert all({'question','why_it_matters','decision_gate','current_evidence','missing_evidence','expected_impact','urgency','owner','status','source_candidates'} <= i.keys() for i in items)
