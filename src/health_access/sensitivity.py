@@ -5,70 +5,53 @@ from .model import Scenario, evaluate
 
 
 def one_at_a_time(scenario: Scenario, outcome: str = "screened") -> list[dict]:
-    """Low/high sweep per assumption; heuristic screen only, not a fitted importance ranking."""
-    base = evaluate(scenario)
-    base_value = base[outcome]
-    rows = []
-    for assumption in scenario.assumptions:
-        results = {}
-        for label in ("low", "high"):
-            varied = replace(
-                scenario,
-                assumptions=[
-                    replace(a, mode=getattr(a, label)) if a.name == assumption.name else a
-                    for a in scenario.assumptions
-                ],
-            )
-            results[label] = evaluate(varied)[outcome]
-        swing = abs(results["high"] - results["low"])
-        rows.append(
-            {
-                "assumption": assumption.name,
-                "unit": assumption.unit,
-                "rationale": assumption.rationale,
-                "low": results["low"],
-                "base": base_value,
-                "high": results["high"],
-                "swing": swing,
-                "interpretation": (
-                    "One-at-a-time swing on a synthetic teaching model; "
-                    "does not rank real-world importance or validate any input."
-                ),
-            }
-        )
-    return sorted(rows, key=lambda row: row["swing"], reverse=True)
+    """Show local low/high shifts; this is NOT a SALib global Sobol result."""
+    names = ("eligible", "need_rate", "awareness_rate", "screening_rate",
+             "followup_rate", "capacity", "spend_inr")
+    center = evaluate(scenario)[outcome]
+    findings = []
+    for name in names:
+        original = getattr(scenario, name)
+        low_scenario = replace(scenario, **{name: replace(original, mode=original.low)})
+        high_scenario = replace(scenario, **{name: replace(original, mode=original.high)})
+        low = evaluate(low_scenario)[outcome]
+        high = evaluate(high_scenario)[outcome]
+        findings.append({"input": name, "low_outcome": low, "baseline": center,
+                         "high_outcome": high, "swing": high - low,
+                         "method": "one-at-a-time scenario range, not global sensitivity"})
+    total = sum(abs(r["swing"]) for r in findings)
+    for row in findings:
+        assumed = getattr(scenario, row["input"])
+        row.update(parameter_range={"low": assumed.low, "high": assumed.high, "unit": assumed.unit},
+                   normalized_importance=abs(row["swing"])/total if total else 0,
+                   interpretation="Sensitivity under supplied ranges, not evidence that an assumption is wrong")
+    return sorted(findings, key=lambda row: row["swing"], reverse=True)
 
 
-def morris_screen(scenario: Scenario, outcome: str = "screened", trajectories: int = 20):
-    """SALib Morris on training ranges; illustrates screening mechanics, not empirical drivers."""
-    from SALib.analyze import morris
-    from SALib.sample import morris as sample_morris
+def salib_morris(scenario: Scenario, *, samples: int = 128, seed: int = 42) -> list[dict]:
+    """Morris global screen using SALib; transparent bounds, deterministic seed."""
+    from SALib.sample.morris import sample
+    from SALib.analyze.morris import analyze
+    import numpy as np
 
-    names = [a.name for a in scenario.assumptions]
-    bounds = [[a.low, a.high] for a in scenario.assumptions]
-    problem = {"num_vars": len(names), "names": names, "bounds": bounds}
-    samples = sample_morris.sample(problem, trajectories, num_levels=4, seed=scenario.seed)
-
-    def run(row):
-        varied = replace(
-            scenario,
-            assumptions=[
-                replace(a, mode=float(value)) for a, value in zip(scenario.assumptions, row)
-            ],
-        )
-        return evaluate(varied)[outcome]
-
-    results = [run(row) for row in samples]
-    analysis = morris.analyze(problem, samples, results, seed=scenario.seed)
-    return [
-        {
-            "assumption": name,
-            "mu_star": float(mu),
-            "sigma": float(sigma),
-            "interpretation": (
-                "Morris elementary-effects screen over assumed ranges; "
-                "not evidence of real-world importance."
-            ),
-        }
-        for name, mu, sigma in zip(names, analysis["mu_star"], analysis["sigma"])
-    ]
+    names = ("eligible", "need_rate", "awareness_rate", "screening_rate",
+             "followup_rate", "capacity")
+    ranges = [getattr(scenario, name) for name in names]
+    problem = {"num_vars": len(names), "names": list(names),
+               "bounds": [[r.low, r.high] for r in ranges]}
+    # Zero-width ranges make Morris undefined; omit those dimensions.
+    varying = [(name, r) for name, r in zip(names, ranges) if r.high > r.low]
+    if len(varying) < 2:
+        return []
+    problem = {"num_vars": len(varying), "names": [n for n, _ in varying],
+               "bounds": [[r.low, r.high] for _, r in varying]}
+    points = sample(problem, N=samples, seed=seed)
+    outputs = []
+    for point in points:
+        updated = {n: replace(r, mode=float(v)) for (n, r), v in zip(varying, point)}
+        outputs.append(evaluate(replace(scenario, **updated))["screened"])
+    result = analyze(problem, points, np.asarray(outputs, dtype=float), print_to_console=False, seed=seed)
+    return sorted([{"input": name, "mu_star": float(mu), "sigma": float(sigma),
+                    "method": "SALib Morris; synthetic screening outcome"}
+                   for name, mu, sigma in zip(problem["names"], result["mu_star"], result["sigma"])],
+                  key=lambda x: x["mu_star"], reverse=True)
