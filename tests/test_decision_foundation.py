@@ -1,4 +1,3 @@
-import csv
 import sys
 from datetime import date
 from pathlib import Path
@@ -7,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from health_access.decision.evidence import compatible, district_ledger, trace
+from health_access.decision.evidence import compatible, district_ledger
 from health_access.decision.readiness import assess
 from health_access.decision.schema import Confidence, DecisionCase, Evidence, Intervention, Status
 
