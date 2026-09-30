@@ -1,0 +1,12 @@
+{
+  "manifest_version": "1",
+  "file": "nfhs_india_2026-09-30.csv.gz",
+  "sha256_uncompressed": "750be317111bdd313d05d49ee48b6414b76def1018dc893dcea813334cefa0c8",
+  "source_url": "https://raw.githubusercontent.com/SaiSiddhardhaKalla/NFHS/main/India.csv",
+  "retrieved_on": "2026-09-30",
+  "survey_vintage": "2019-21",
+  "wave": "NFHS-5",
+  "status": "OBSERVED_UNVERIFIED",
+  "expected_processed_rows": 24,
+  "caveat": "Third-party transcription. Official factsheet verification pending. Not screening coverage."
+}
