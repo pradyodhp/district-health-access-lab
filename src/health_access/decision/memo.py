@@ -6,6 +6,9 @@ def make_memo(run: dict, readiness: dict, evidence: list[dict]) -> dict:
     if run.get("classification") != "HYPOTHETICAL":
         raise ValueError("Only hypothetical run memos supported")
     snapshot = run["snapshot"]
+    # v2 context is authoritative. Caller-provided current evidence cannot alter it.
+    readiness = snapshot.get("readiness", readiness)
+    evidence = snapshot.get("evidence_snapshot", evidence)
     case = snapshot["case"]
     bands = run["bands"]["screened"]
     blockers = list(readiness["blockers"]) + [
@@ -35,7 +38,11 @@ def make_memo(run: dict, readiness: dict, evidence: list[dict]) -> dict:
         "key_assumptions": {key: {"low": value["low"], "mode": value["mode"], "high": value["high"],
                                     "unit": value["unit"], "status": "HYPOTHETICAL"}
                             for key, value in snapshot["inputs"].items()},
-        "sensitivity": "Inspect the scenario sensitivity screen; high model sensitivity is not causal evidence.",
+        "sensitivity": run.get("analyses", {}).get("sensitivity", []),
+        "robustness": run.get("analyses", {}).get("robustness", {}),
+        "allocation_analysis": run.get("analyses", {}).get("allocation", {"status": "NOT_RUN"}),
+        "readiness": readiness,
+        "research_questions": run.get("analyses", {}).get("research", []),
         "what_could_change": ["Verified compatible screening counts and adult denominators could change whether a gap can be assessed",
                               "Validated cost and effect studies could change allocation feasibility",
                               "Assumed awareness and capacity ranges can change rankings inside the training model only"],
@@ -51,7 +58,7 @@ def make_memo(run: dict, readiness: dict, evidence: list[dict]) -> dict:
         "methodology": "Versioned hypothetical case, triangular distributions, seeded Monte Carlo; real decision blocked by evidence gate.",
         "limitations": ["NFHS glucose elevation is not screening coverage or causal effect",
                         "Synthetic output is not a district patient, expenditure or policy estimate"],
-        "provenance": {"run_digest": run["snapshot_digest"],
+        "provenance": {"run_digest": run["snapshot_digest"], "output_digest": run.get("output_digest"),
                        "data_vintage": snapshot["data_vintage"],
                        "seed": snapshot["seed"], "draws": snapshot["simulation_count"]},
     }
