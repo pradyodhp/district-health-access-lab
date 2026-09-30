@@ -1,4 +1,4 @@
-"""Read-only demo API. All output from synthetic presets carries a scenario label."""
+"""Local portfolio API. All output from synthetic presets carries a scenario label."""
 from pathlib import Path
 import csv
 
@@ -12,9 +12,10 @@ from .decision.cases import pilot_case
 from .decision.evidence import district_ledger, trace
 from .decision.readiness import assess
 from .decision.schema import DecisionCase
-from .decision.runs import RunStore, make_run
+from .decision.runs import RunStore, make_run, replay
 from .decision.hypotheses import HEALTH_HYPOTHESES
 from .decision.research import backlog
+from .decision.backlog import from_gates
 from .decision.optimizer import Option, optimize
 from .decision.robustness import Thresholds, compare_scenarios, evaluate_thresholds
 from .decision.memo import make_memo
@@ -116,7 +117,8 @@ def create_run(payload: RunRequest):
     try:
         run = make_run(payload.case, payload.inputs.domain(), scenario_id=payload.scenario_id,
                        scenario_version=payload.scenario_version,
-                       draws=payload.simulation_count, seed=payload.seed)
+                       draws=payload.simulation_count, seed=payload.seed,
+                       evidence=district_ledger(ROOT / "data/processed/pilot_indicators.csv"))
         return RunStore(ROOT / "runs").save(run)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
@@ -141,10 +143,20 @@ def run_compare(left_run_id: str, right_run_id: str):
 @app.get("/api/runs/{run_id}/memo")
 def run_memo(run_id: str):
     run = get_run(run_id)
-    from datetime import date
-    records = district_ledger(ROOT / "data/processed/pilot_indicators.csv")
-    readiness = assess(pilot_case(), records, as_of=date.today())
-    return make_memo(run, readiness, [record.model_dump(mode="json") for record in records])
+    return make_memo(run, run["snapshot"]["readiness"], run["snapshot"]["evidence_snapshot"])
+
+
+@app.get("/api/runs/{run_id}/replay")
+def replay_run(run_id: str):
+    try:
+        return replay(get_run(run_id))
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.get("/api/research-backlog")
+def evidence_research_backlog():
+    return {"classification": "RESEARCH_QUESTIONS_NOT_FINDINGS", "items": from_gates(readiness_view())}
 
 
 @app.get("/api/hypotheses")
@@ -179,7 +191,7 @@ def optimize_view(payload: OptimizationRequest):
 
 
 @app.get("/api/robustness")
-def robustness_view(draws: int = Query(300, ge=100, le=10_000), seed: int = 42):
+def robustness_view(draws: int = Query(300, ge=100, le=10_000), seed: int = Query(42, ge=0, le=2**32-1)):
     return compare_scenarios({name: factory() for name, factory in PRESETS.items()},
                              draws=draws, seed=seed)
 
@@ -196,7 +208,7 @@ def reversal_view(left: str, right: str, field: str = "awareness_rate",
 
 
 @app.get("/api/threshold/{preset}")
-def threshold_view(preset: str, minimum_screened: float = 250,
+def threshold_view(preset: str, minimum_screened: float = Query(250, ge=0, allow_inf_nan=False),
                    minimum_probability: float = Query(.7, ge=0, le=1),
                    draws: int = Query(300, ge=100, le=10_000)):
     if preset not in PRESETS:
@@ -221,7 +233,7 @@ def presets():
 
 
 @app.get("/api/scenario/{name}")
-def scenario(name: str, draws: int = 500):
+def scenario(name: str, draws: int = Query(500, ge=100, le=100_000)):
     if name not in PRESETS:
         raise HTTPException(404, "Unknown scenario")
     sc = PRESETS[name]()
