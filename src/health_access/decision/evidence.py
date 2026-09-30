@@ -21,7 +21,10 @@ def district_ledger(csv_path: Path, model_version: str = "0.2.0") -> list[Eviden
             vintage=row["survey_vintage"], geography=f"{row['state']}/{row['district']}",
             population=f"{row['sex']} adults {row['age_group']}", confidence=Confidence.LOW,
             caveat=row["caveat"], methodology="Third-party transcription; PDF cross-check pending",
-            model_version=model_version,
+            model_version=model_version, geography_level="district", age_range=row["age_group"],
+            sex=row["sex"], period_start=date(2019, 1, 1), period_end=date(2021, 12, 31),
+            indicator_kind="proxy", source_identifier="nfhs-community-snapshot-2026-09-30",
+            source_sha256=row["source_sha256"],
         ))
     return result
 
