@@ -43,6 +43,20 @@ def optimize(options: list[Option], *, budget_inr: int,
     ids = {o.id for o in options}
     if any(d not in ids or d == o.id for o in options for d in o.depends_on):
         raise ValueError("Missing or self dependency")
+    dependencies = {o.id: o.depends_on for o in options}
+    def visit(key, active, visited):
+        if key in active:
+            raise ValueError("Cyclic option dependencies")
+        if key in visited:
+            return
+        active.add(key)
+        for dependency in dependencies[key]:
+            visit(dependency, active, visited)
+        active.remove(key)
+        visited.add(key)
+    visited = set()
+    for key in ids:
+        visit(key, set(), visited)
     if any(o.district not in district_capacity for o in options):
         raise ValueError("Each option requires a district capacity")
     if any(not isfinite(v) or v < 0 for v in district_capacity.values()):
@@ -82,4 +96,5 @@ def optimize(options: list[Option], *, budget_inr: int,
             "cost_per_person_inr": spend / outcome if outcome > 0 else None,
             "district_capacity_utilization": {d: (reached[d] / cap if cap else None)
                                                for d, cap in district_capacity.items()},
+            "optimality_scope": "Optimal under the specified model and discrete grid constraints, not real-world optimality",
             "method": "bounded exhaustive grid, hypothetical yields; shared district capacity caps; not real funding advice"}
