@@ -24,6 +24,7 @@ from ..model import Assumption
 import os
 import platform
 import tempfile
+import logging
 
 RUN_FORMAT_VERSION = "2"
 ENGINE_VERSION = "1.0.0"
@@ -61,6 +62,10 @@ def make_run(case: DecisionCase, scenario: Scenario, *, scenario_id: str,
                 "inputs": inputs, "seed": seed, "simulation_count": draws,
                 "data_vintage": "NFHS-5 2019-21 (context only, not simulation input)"}
     digest = hashlib.sha256(canonical(snapshot).encode("utf-8")).hexdigest()
+    logger = logging.getLogger("health_access")
+    logger.info(canonical({"event": "run_started", "case_id": case.case_id,
+                           "case_version": case.version, "model_version": case.model_version,
+                           "engine_version": ENGINE_VERSION, "seed": seed, "draws": draws}))
     point = evaluate(scenario)
     bands = simulate(scenario, draws=draws, seed=seed)
     analyses = {"sensitivity": one_at_a_time(scenario),
@@ -70,6 +75,8 @@ def make_run(case: DecisionCase, scenario: Scenario, *, scenario_id: str,
                 "reversal": reversal_scan(scenario, PRESETS["status-quo"](), field="awareness_rate"),
                 "allocation": {"status": "NOT_RUN", "reason": "No optimizer configuration was supplied with this run"}}
     outputs = {"point": point, "bands": bands, "analyses": analyses}
+    logger.info(canonical({"event": "run_completed", "run_id": "run-" + digest[:24],
+                           "seed": seed, "draws": draws, "engine_version": ENGINE_VERSION}))
     return {"output_digest": hashlib.sha256(canonical(outputs).encode()).hexdigest(),
             "run_id": f"run-{digest[:24]}", "snapshot_digest": digest,
             "created_at": (created_at or datetime.now(timezone.utc)).isoformat(),
