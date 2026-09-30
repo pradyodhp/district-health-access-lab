@@ -34,6 +34,24 @@ app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
+class V1Alias:
+    """Serve /api/v1/* from the existing /api/* routes; the unversioned routes stay valid."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and scope["path"].startswith("/api/v1/"):
+            scope = dict(scope)
+            scope["path"] = "/api/" + scope["path"][len("/api/v1/"):]
+            if scope.get("raw_path"):
+                scope["raw_path"] = scope["path"].encode()
+        await self.inner(scope, receive, send)
+
+
+app.add_middleware(V1Alias)
+
+
 @app.get("/health")
 @app.get("/api/health")
 def health():
