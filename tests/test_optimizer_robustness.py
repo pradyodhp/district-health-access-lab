@@ -4,7 +4,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from health_access.decision.optimizer import Option, optimize
 from health_access.decision.robustness import Thresholds, compare_scenarios, evaluate_thresholds
-from health_access.scenarios import training_scenario, training_outreach
+from health_access.scenarios import training_scenario
 
 
 def options():
