@@ -5,9 +5,10 @@ import csv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from .requests import ScenarioInput, RunRequest, OptimizationRequest
+from .observability import install_observability
 
-from .model import Assumption, Scenario, compare, evaluate
+from .model import compare, evaluate
 from .decision.cases import pilot_case
 from .decision.evidence import district_ledger, trace
 from .decision.readiness import assess
@@ -26,39 +27,17 @@ from .sensitivity import one_at_a_time, salib_morris
 from .simulation import simulate
 
 ROOT = Path(__file__).resolve().parents[2]
-app = FastAPI(title="District Health Access Lab", version="0.2.0",
+app = FastAPI(title="District Health Access Lab", version="0.3.0",
               description="Observed indicator table + separate hypothetical simulation. Not policy advice.")
+install_observability(app)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
-class Range(BaseModel):
-    low: float = Field(ge=0)
-    mode: float = Field(ge=0)
-    high: float = Field(ge=0)
-    unit: str
-    rationale: str = Field(min_length=1)
-
-    def domain(self):
-        return Assumption(**self.model_dump())
-
-
-class ScenarioInput(BaseModel):
-    eligible: Range
-    need_rate: Range
-    awareness_rate: Range
-    screening_rate: Range
-    followup_rate: Range
-    capacity: Range
-    spend_inr: Range
-
-    def domain(self):
-        return Scenario(**{key: getattr(self, key).domain() for key in type(self).model_fields})
-
-
+@app.get("/health")
 @app.get("/api/health")
 def health():
-    return {"ok": True, "data_status": "NFHS parse unverified; no observed access-gap estimate"}
+    return {"ok": True, "service": "district-health-access-lab", "api_version": "0.3.0", "engine_version": "1.0.0", "run_format": "2", "storage": "local JSON, not durable hosted persistence", "data_status": "NFHS parse unverified; no observed access-gap estimate"}
 
 
 @app.get("/api/indicators")
@@ -103,15 +82,6 @@ def readiness_view():
     return assess(pilot_case(), district_ledger(ROOT / "data/processed/pilot_indicators.csv"), as_of=date.today())
 
 
-class RunRequest(BaseModel):
-    case: DecisionCase
-    scenario_id: str = Field(min_length=1)
-    scenario_version: str = Field(min_length=1)
-    inputs: ScenarioInput
-    seed: int = Field(default=42, ge=0, le=2**32 - 1)
-    simulation_count: int = Field(default=500, ge=100, le=100_000)
-
-
 @app.post("/api/runs")
 def create_run(payload: RunRequest):
     try:
@@ -128,7 +98,7 @@ def create_run(payload: RunRequest):
 def get_run(run_id: str):
     try:
         return RunStore(ROOT / "runs").get(run_id)
-    except (ValueError, FileNotFoundError) as exc:
+    except (ValueError, FileNotFoundError, KeyError) as exc:
         raise HTTPException(404, "Run not found") from exc
 
 
@@ -170,13 +140,6 @@ def research_view(preset: str):
         raise HTTPException(404, "Unknown preset")
     return {"classification": "HYPOTHETICAL", "items": backlog(PRESETS[preset](), [], effort={}),
             "warning": "Heuristic research queue, not causal effects or formal value-of-information"}
-
-
-class OptimizationRequest(BaseModel):
-    classification: str = "HYPOTHETICAL"
-    budget_inr: int = Field(ge=0)
-    district_capacity: dict[str, float]
-    options: list[dict]
 
 
 @app.post("/api/optimize")
