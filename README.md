@@ -55,6 +55,18 @@ The additional **Decision workbench** tab runs an evidence-gated training flow: 
 
 `python3 -m pytest -q` covers source extraction, domain validation, conservation, reproducibility, optimizer constraints and API contracts. `cd web && npm test && npm run build` checks the UI safety projections and builds the application; CI runs both. The default six-district case remains hypothetical because observed inputs are an unverified transcription and the required screening, denominator, cost, effect and capacity evidence is missing. Model preference percentages are conditional on training distributions, not real-world confidence.
 
+### Quick start: open and use it (one terminal)
+
+```bash
+python3 -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt httpx
+python3 scripts/build_data.py
+(cd web && npm ci && npm run build)
+uvicorn health_access.api:app --app-dir src --port 8000
+```
+
+Open http://127.0.0.1:8000, click **Decision workbench**, then step through Case & evidence (the gate shows HOLD), Model & runs (run, then Verify replay), Sensitivity & research, and Memo. The API is also served under `/api/v1/...`; the original `/api/...` routes still work. Browser tests: `cd e2e && npm ci && npx playwright install chromium && npx playwright test` (primary journey plus an axe-core WCAG 2 A/AA scan of each section; needs the web build above).
+
 See the [five-minute acceptance checklist](docs/acceptance-checklist.md) for the synthetic case walkthrough, expected evidence HOLD and test gates.
 
 ## Audit and interview documentation
