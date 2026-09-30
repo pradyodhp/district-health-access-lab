@@ -1,5 +1,5 @@
 """Healthcare pilot adapter: domain-neutral case schema, explicit synthetic status."""
-from .schema import Constraint, DecisionCase, Intervention
+from .schema import Constraint, DecisionCase
 
 
 def pilot_case() -> DecisionCase:
