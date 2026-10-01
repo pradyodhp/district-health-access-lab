@@ -41,7 +41,7 @@ def test_real_case_is_blocked():
 
 
 def test_run_api_roundtrip_and_rejects_real(monkeypatch, tmp_path):
-    import health_access.api as api
+    import health_access.routes.runs as api
     monkeypatch.setattr(api, "RunStore", lambda root: RunStore(tmp_path))
     client = TestClient(app)
     case = pilot_case().model_dump(mode="json")
