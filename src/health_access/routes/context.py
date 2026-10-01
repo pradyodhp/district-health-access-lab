@@ -1,0 +1,4 @@
+"""Repository-local paths. Hosted run storage remains ephemeral."""
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
