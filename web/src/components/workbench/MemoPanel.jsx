@@ -1,0 +1,8 @@
+import React from 'react'
+import {apiClient as API} from '../../services/apiClient.js'
+import {fmt, FIELDS, defaults} from '../../workbench-utils.js'
+import {fundingDecision} from '../../decision-utils.mjs'
+
+export default function MemoPanel({a,evidence,exportMemo,memo,perform,research,run,setMemo,working}) {
+  return <div className="panel"><span className="eyebrow">CLIENT MEMO / EVIDENCE GATE</span><h2>Decision on hold</h2><p>A memo is generated from the versioned run and evidence gate, not from a freestanding front-end sentence. Run a hypothetical model first.</p><button className="primary" disabled={!run||working} onClick={()=>perform(async()=>setMemo(await API(`runs/${run.run_id}/memo`)))}>Generate memo from run</button>{memo && <><p><strong className="red">{fundingDecision(memo)}</strong></p><p>{memo.executive_summary}</p><h3>Decision question</h3><p>{memo.decision_question}</p><p>Run: {memo.run_id} · Case: {memo.case_id} v{memo.case_version} · Model: {memo.model_version}</p><p>Synthetic screened p10–p90: {fmt(memo.illustrative_screened_band.p10)}–{fmt(memo.illustrative_screened_band.p90)}. Not an observed district estimate.</p><h3>What we know</h3><ul>{memo.what_we_know.map(x=><li key={x}>{x}</li>)}</ul><h3>What we do not know</h3><ul>{memo.what_we_do_not_know.map(x=><li key={x}>{x}</li>)}</ul><h3>What could change this?</h3><ul>{memo.what_could_change.map(x=><li key={x}>{x}</li>)}</ul><h3>Model caveats</h3><p>{memo.uncertainty} {memo.methodology}</p><h3>Next research</h3><ul>{memo.next_research.map(x=><li key={x}>{x}</li>)}</ul><p>{memo.limitations.join('. ')}.</p><button className="secondary" onClick={exportMemo}>Download structured JSON memo</button></>}</div>
+}
