@@ -9,12 +9,15 @@ from health_access.api import app
 def test_workbench_roundtrip(tmp_path, monkeypatch):
     from health_access.decision import runs
     monkeypatch.setattr(runs, "ROOT", tmp_path, raising=False)
-    from health_access import api
+    from health_access.routes import runs as api
+    from health_access.routes import evidence, cases
     monkeypatch.setattr(api, "ROOT", tmp_path)
     # The pilot evidence is bundled with the package, not with mutable run storage.
     def ledger(_):
         return []
     monkeypatch.setattr(api, "district_ledger", ledger)
+    monkeypatch.setattr(evidence, "district_ledger", ledger)
+    monkeypatch.setattr(cases, "district_ledger", ledger)
     client = TestClient(app)
     case = client.get('/api/case').json()
     inputs = client.get('/api/scenario/status-quo').json()['inputs']
