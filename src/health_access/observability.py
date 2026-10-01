@@ -4,7 +4,8 @@ import logging
 import time
 from uuid import uuid4
 
-from fastapi import Request, HTTPException
+from fastapi import Request
+from starlette.exceptions import HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
