@@ -107,3 +107,15 @@ After this audit, follow the requested priority order, not superficial feature c
 8. **Final acceptance (30):** report DONE/PARTIAL/BLOCKED separately for architecture, evidence system, modeling, uncertainty, sensitivity, robustness, optimization, frontend, testing, security, deployment and documentation. Any unmet gate remains explicit; empirical evidence cannot be marked DONE by synthetic tests.
 
 Every row's definition of done above is an acceptance condition. Implementation status belongs in the final engineering report, not retroactively in this baseline audit. Do not claim every possible weakness was proven absent: this is a bounded source/test audit, not an independent clinical, statistical or penetration-test review.
+
+
+## 2026-10-01 follow-up: approved engineering gaps
+
+The gap descriptions above are the Phase 0 baseline, not current defects. The
+follow-up implements resource routers (no rewrite alias), typed bounded compute
+requests and process-wide admission; five workbench views and case/evidence/
+simulation/decision-run/research hooks; keyboard journey, focus/accessible-name/
+reduced-motion and responsive checks. See acceptance-checklist.md for the exact
+implemented scope and remaining limits. Real assistive-technology audio review
+and hosted deployment are not claimed. Free-only deployment is prepared, not
+started. All healthcare evidence/model limits remain unchanged.
