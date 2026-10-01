@@ -2,7 +2,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const SECTIONS = ['Case & evidence', 'Model & runs', 'Sensitivity & research', 'Memo'];
+const SECTIONS = ['Case & evidence', 'Model & runs', 'Sensitivity & research', 'Allocation & robustness', 'Memo'];
 
 test('landing page has no serious accessibility violations', async ({ page }) => {
   await page.goto('/');
