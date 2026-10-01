@@ -31,6 +31,25 @@ test('API failure surfaces an error instead of an invented zero', async ({ page 
   await page.route('**/api/readiness', (route) => route.abort());
   await page.goto('/');
   await page.getByRole('button', { name: 'Decision workbench' }).click();
-  // The workbench must not render a fabricated readiness score of 0 as if real.
-  await expect(page.getByText(/REAL DECISION: HOLD \(/)).toBeVisible();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByText(/Evidence completeness: not available/)).toBeVisible();
+  await expect(page.getByText(/Evidence completeness: 0\/100/)).toHaveCount(0);
 });
+
+
+test('editing an input removes saved run and run-backed memo', async ({page}) => {
+  await page.goto('/')
+  await page.getByRole('button', {name: 'Decision workbench'}).click()
+  await page.getByRole('button', {name: 'Model & runs', exact: true}).click()
+  await page.getByRole('button', {name: 'Run reproducible model'}).click()
+  await expect(page.getByText(/SAVED LOCAL RUN/)).toBeVisible()
+  await page.getByRole('button', {name: 'Memo', exact: true}).click()
+  await page.getByRole('button', {name: 'Generate memo from run'}).click()
+  await expect(page.getByText('What we do not know')).toBeVisible()
+  await page.getByRole('button', {name: 'Model & runs', exact: true}).click()
+  await page.getByRole('spinbutton', {name: 'awareness_rate mode'}).fill('0.41')
+  await expect(page.getByText(/SAVED LOCAL RUN/)).toHaveCount(0)
+  await page.getByRole('button', {name: 'Memo', exact: true}).click()
+  await expect(page.getByRole('button', {name: 'Generate memo from run'})).toBeDisabled()
+  await expect(page.getByText('What we do not know')).toHaveCount(0)
+})
