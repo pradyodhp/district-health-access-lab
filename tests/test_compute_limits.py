@@ -71,3 +71,10 @@ def test_openapi_contains_real_v1_resources_only():
     for path in ('evidence','case','runs','scenario','robustness','runs/{run_id}/memo'):
         assert '/api/v1/'+path in paths
         assert '/api/'+path not in paths
+
+
+def test_v1_missing_resource_error_has_same_shape():
+    response = TestClient(app).get('/api/v1/nope')
+    assert response.status_code == 404
+    assert response.json()['detail'] == 'Not Found'
+    assert response.json()['request_id'] == response.headers['x-request-id']
